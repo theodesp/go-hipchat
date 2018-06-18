@@ -12,6 +12,10 @@
 <img src="https://travis-ci.org/theodesp/go-hipchat.svg?branch=master" />
 </a>
 
+<a href="https://ci.appveyor.com/project/theodesp/go-hipchat" rel="nofollow">
+<img src="https://ci.appveyor.com/api/projects/status/ytwi6bn3ai6tmd7i/branch/master?svg=true" />
+</a>
+
 <a href="https://codecov.io/gh/theodesp/go-hipchat">
   <img src="https://codecov.io/gh/theodesp/go-hipchat/branch/master/graph/badge.svg" />
 </a>
