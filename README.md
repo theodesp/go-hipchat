@@ -5,7 +5,7 @@
 </a>
 
 <a href="https://opensource.org/licenses/BSD-3-Clause" rel="nofollow">
-<img src="https://img.shields.io/github/license/mashape/apistatus.svg" alt="License"/>
+<img src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" alt="License"/>
 </a>
 
 <a href="https://travis-ci.org/theodesp/go-hipchat" rel="nofollow">
