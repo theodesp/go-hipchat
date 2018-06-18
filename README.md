@@ -20,6 +20,9 @@
   <img src="https://goreportcard.com/badge/github.com/theodesp/go-hipchat" />
 </a>
 
+<a href="https://waffle.io/theodesp/go-hipchat">
+  <img src="https://badge.waffle.io/theodesp/go-hipchat.svg?columns=all" />
+</a>
 
 go-hipchat is a Go client library for accessing the [Hipchat API](https://developer.atlassian.com/server/hipchat/about-the-hipchat-rest-api/).
 
