@@ -28,7 +28,7 @@
   <img src="https://badge.waffle.io/theodesp/go-hipchat.svg?columns=all" />
 </a>
 
-go-hipchat is a Go client library for accessing the [Hipchat API](https://developer.atlassian.com/server/hipchat/about-the-hipchat-rest-api/).
+go-hipchat is a Go client library for accessing the [Hipchat API v2](https://developer.atlassian.com/server/hipchat/about-the-hipchat-rest-api/).
 
 go-hipchat requires Go version 1.8 or greater.
 
@@ -70,7 +70,7 @@ creating a new client, pass an `http.Client` that can handle authentication for
 you. The easiest and recommended way to do this is using the [oauth2][]
 library, but you can always use any other library that provides an
 `http.Client`. If you have an OAuth2 access token (for example, a [personal
-API token][]), you can use it with the oauth2 library using:
+API token](https://developer.atlassian.com/server/hipchat/hipchat-rest-api-access-tokens/)), you can use it with the oauth2 library using:
 
 ```go
 
@@ -98,7 +98,7 @@ https://developer.atlassian.com/server/hipchat/hipchat-rest-api-response-codes
 
 For complete usage of go-hipchat, see the full [package docs][https://godoc.org/github.com/theodesp/go-hipchat/hipchat].
 
-[HipChat API]: https://developer.atlassian.com/server/hipchat/about-the-hipchat-rest-api/
+[HipChat API]: https://www.hipchat.com/docs/apiv2
 [oauth2]: https://github.com/golang/oauth2
 [oauth2 docs]: https://godoc.org/golang.org/x/oauth2
 
