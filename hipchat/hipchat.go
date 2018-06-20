@@ -5,16 +5,11 @@ import (
 	"net/url"
 )
 
-const (
-	defaultBaseUrl = "https://api.hipchat.com"
-	userAgent      = "go-hipchat"
-)
-
 // A Client communicates with the HipChat API.
 type Client struct {
-	BaseUrl   *url.URL
-	UserAgent string
-	common    service
+	BaseUrl    *url.URL
+	UserAgent  string
+	common     service
 	apiVersion string
 
 	Room *RoomService
@@ -25,15 +20,15 @@ type service struct {
 }
 
 // NewClient returns a new HipChat API client
-func NewCLient(client *http.Client) *Client {
+func NewClient(client *http.Client) *Client {
 	if client == nil {
 		client = http.DefaultClient
 	}
 
-	baseUrl, _ := url.Parse(string(defaultBaseUrl + "/" + ApiVersions.V2))
+	baseUrl, _ := url.Parse(string(defaultBaseUrl + "/" + apiVersion2))
 
 	c := &Client{BaseUrl: baseUrl, UserAgent: userAgent}
-	c.apiVersion = ApiVersions.V2
+	c.apiVersion = apiVersion2
 	c.common.client = client
 
 	// Services
@@ -43,7 +38,8 @@ func NewCLient(client *http.Client) *Client {
 }
 
 // Sets the HipChat API version. This defaults to v2
-func (c *Client)SetApiVersion(apiVersion string)  {
+func (c *Client) SetApiVersion(apiVersion string) {
 	baseUrl, _ := url.Parse(string(defaultBaseUrl + "/" + apiVersion))
+	c.apiVersion = apiVersion
 	c.BaseUrl = baseUrl
 }

@@ -1,9 +1,9 @@
 package hipchat
 
 import (
-	"net/url"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"net/url"
 	"testing"
 )
 
@@ -17,7 +17,7 @@ func TestHipChatClientTestSuite(t *testing.T) {
 }
 
 func (suite *HipChatClientTestSuite) SetupTest() {
-	suite.sut = NewCLient(nil)
+	suite.sut = NewClient(nil)
 }
 
 func (suite *HipChatClientTestSuite) TestNewClient() {
