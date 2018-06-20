@@ -4,18 +4,18 @@ format:
 
 .PHONY: debs
 debs:
-	GOPATH=$(GOPATH) go get -u ./...
-	GOPATH=$(GOPATH) go get -u github.com/stretchr/testify
+	@go get -u ./...
+	@go get -u github.com/stretchr/testify
 
 .PHONY: test
 test:
-	GOPATH=$(GOPATH) go test -race
+	@go test -race ./...
 
 .PHONY: bench
 bench:
-	GOPATH=$(GOPATH) go test -bench=. -check.b -benchmem
+	@go test -bench=. -benchmem
 
 # Clean junk
 .PHONY: clean
 clean:
-	GOPATH=$(GOPATH) go clean ./...
+	@go clean ./...
