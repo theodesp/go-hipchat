@@ -33,10 +33,9 @@ func (suite *HipChatClientTestSuite) TestNewClient() {
 
 func (suite *HipChatClientTestSuite) TestClient_SetApiVersion() {
 	assert := assert.New(suite.T())
-	suite.sut.SetApiVersion(ApiVersion("v3"))
+	suite.sut.SetApiVersion("v3")
 
 	expectedBaseUrl, _ := url.Parse("https://api.hipchat.com/v3")
 
 	assert.Equal(suite.sut.BaseUrl, expectedBaseUrl)
-
 }
