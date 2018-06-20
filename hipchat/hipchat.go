@@ -5,9 +5,13 @@ import (
 	"net/url"
 )
 
+type ApiVersion string
+
+// Default ApiVersion
+const V2 ApiVersion = "v2"
+
 const (
 	defaultBaseUrl = "https://api.hipchat.com"
-	v2Part         = "v2"
 	userAgent      = "go-hipchat"
 )
 
@@ -16,16 +20,13 @@ type Client struct {
 	BaseUrl   *url.URL
 	UserAgent string
 	common    service
-	V2        *V2
+	versionTag ApiVersion
+
+	Room *RoomService
 }
 
 type service struct {
 	client *http.Client
-}
-
-// V2 is the baseline namespace for the  HipChat API v2 operations
-type V2 struct {
-	versionPart string
 }
 
 // NewClient returns a new HipChat API client
@@ -34,11 +35,20 @@ func NewCLient(client *http.Client) *Client {
 		client = http.DefaultClient
 	}
 
-	baseUrl, _ := url.Parse(defaultBaseUrl)
+	baseUrl, _ := url.Parse(string(defaultBaseUrl + "/" + V2))
 
 	c := &Client{BaseUrl: baseUrl, UserAgent: userAgent}
+	c.versionTag = V2
 	c.common.client = client
-	c.V2 = &V2{versionPart: v2Part}
+
+	// Services
+	c.Room = (*RoomService)(&c.common)
 
 	return c
+}
+
+// Sets the HipChat API version. This defaults to v2
+func (c *Client)SetApiVersion(apiVersion ApiVersion)  {
+	baseUrl, _ := url.Parse(string(defaultBaseUrl + "/" + apiVersion))
+	c.BaseUrl = baseUrl
 }
