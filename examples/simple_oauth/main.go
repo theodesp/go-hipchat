@@ -10,14 +10,15 @@ import (
 )
 
 var authToken = os.Getenv("HIPCHAT_AUTH_TOKEN")
-var baseHost = "https://api.hipchat.com"
+var baseHost = "https://api.hipchat.com/v2/"
 
 func main() {
+	// Context for cancellation
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: authToken})
 	tc := oauth2.NewClient(ctx, ts)
 
-	resp, _ := tc.Get(baseHost + "/v2/room")
+	resp, _ := tc.Get(baseHost + "room")
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
