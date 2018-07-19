@@ -4,7 +4,6 @@ format:
 
 .PHONY: debs
 debs:
-	@go get -u ./...
 	@go get -u github.com/stretchr/testify
 
 .PHONY: test
