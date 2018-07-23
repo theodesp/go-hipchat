@@ -3,14 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"go-hipchat/hipchat"
 	"golang.org/x/oauth2"
-	"io/ioutil"
-	"net/http"
 	"os"
 )
 
 var authToken = os.Getenv("HIPCHAT_AUTH_TOKEN")
-var baseHost = "https://api.hipchat.com/v2/"
 
 func main() {
 	// Context for cancellation
@@ -18,11 +16,12 @@ func main() {
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: authToken})
 	tc := oauth2.NewClient(ctx, ts)
 
-	resp, _ := tc.Get(baseHost + "room")
-	defer resp.Body.Close()
-
-	if resp.StatusCode == http.StatusOK {
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
-		fmt.Println(string(bodyBytes))
+	h := hipchat.NewClient(tc)
+	opts := &hipchat.RoomsListOptions{}
+	opts.IncludeArchived = true
+	opts.MaxResults = 1
+	rooms, _, _ := h.Rooms.List(ctx, opts)
+	for _, room := range rooms {
+		fmt.Println(room.Name)
 	}
 }

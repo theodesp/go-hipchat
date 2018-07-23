@@ -26,6 +26,7 @@ install:
   - go env
   - go get ./...
   - go get -u github.com/stretchr/testify
+  - go get -u github.com/google/go-querystring/query
 
 # to run your custom scripts instead of automatic MSBuild
 build_script:

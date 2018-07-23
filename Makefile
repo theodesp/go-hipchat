@@ -5,6 +5,7 @@ format:
 .PHONY: debs
 debs:
 	@go get -u github.com/stretchr/testify
+	@go get -u github.com/google/go-querystring/query
 
 .PHONY: test
 test:
