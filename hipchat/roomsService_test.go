@@ -1,10 +1,10 @@
 package hipchat
 
 import (
+	"context"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"net/http"
-	"fmt"
-	"context"
 )
 
 func (suite *HipChatClientTestSuite) TestRoomsService_List() {
@@ -20,7 +20,7 @@ func (suite *HipChatClientTestSuite) TestRoomsService_List() {
 	assert.Nil(err)
 
 	want := []*RoomListItem{
-		{ID: int64(1), IsArchived:true, Name: "", Privacy: "", Version:""},
-		{ID: int64(2), IsArchived:false, Name: "", Privacy: "", Version:""}}
+		{ID: int64(1), IsArchived: true, Name: "", Privacy: "", Version: ""},
+		{ID: int64(2), IsArchived: false, Name: "", Privacy: "", Version: ""}}
 	assert.Equal(want, rooms)
 }

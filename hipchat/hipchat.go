@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
-	"io/ioutil"
-	"errors"
 )
 
 // A Client communicates with the HipChat API.
@@ -104,7 +104,7 @@ type PaginatedResponse struct {
 	*http.Response
 	MaxResults int
 	StartIndex int
-	Links *PaginationLinks
+	Links      *PaginationLinks
 }
 
 // PaginationLinks consists of a list of links for the current, next and previous pagination
@@ -118,10 +118,10 @@ type PaginationLinks struct {
 type paginatedListResponse struct {
 	MaxResults int `json:"maxResults,omitempty"`
 	StartIndex int `json:"startIndex,omitempty"`
-	Links              *struct {
-		Next string 	`json:"next,omitempty"`
-		Prev string 	`json:"prev,omitempty"`
-		Self string 	`json:"self"`
+	Links      *struct {
+		Next string `json:"next,omitempty"`
+		Prev string `json:"prev,omitempty"`
+		Self string `json:"self"`
 	} `json:"links,omitempty"`
 }
 

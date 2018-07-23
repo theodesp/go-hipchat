@@ -15,21 +15,21 @@ type RoomsService service
 
 // RoomListItem represents a HipChat Room list item
 type RoomListItem struct {
-	ID         int64 `json:"id"`
+	ID         int64  `json:"id"`
 	IsArchived bool   `json:"is_archived"`
 	Name       string `json:"name"`
-	Privacy    string   `json:"privacy"`
-	Version    string   `json:"version"`
+	Privacy    string `json:"privacy"`
+	Version    string `json:"version"`
 
-	Links              *struct {
+	Links *struct {
 		// The URL to use to retrieve the full room information
-		Self string 	`json:"self"`
+		Self string `json:"self"`
 
 		// The URL to use to retrieve webhooks registered for this room
-		Webhooks string 	`json:"webhooks"`
+		Webhooks string `json:"webhooks"`
 
 		// The URL to use to retrieve members for this room. Only available for private rooms.
-		Members string 	`json:"members,omitempty"`
+		Members string `json:"members,omitempty"`
 
 		//The URL to use to retrieve participants for this room
 		Participants string `json:"participants"`
@@ -40,10 +40,10 @@ type RoomListItem struct {
 // RoomService.ListRooms
 type RoomsListOptions struct {
 	// Filter out private rooms
-	IncludePrivate bool      `url:"	include-private,omitempty"`
+	IncludePrivate bool `url:"	include-private,omitempty"`
 
 	// Filter rooms
-	IncludeArchived bool	`url:"	include-archived,omitempty"`
+	IncludeArchived bool `url:"	include-archived,omitempty"`
 	ListOptions
 }
 

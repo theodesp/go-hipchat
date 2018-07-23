@@ -1,17 +1,17 @@
 package hipchat
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
-	"net/url"
-	"testing"
-	"net/http"
-	"net/http/httptest"
-	"io/ioutil"
-	"encoding/json"
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"testing"
 )
 
 type HipChatClientTestSuite struct {
@@ -69,8 +69,8 @@ func (suite *HipChatClientTestSuite) TestClient_SetApiVersion() {
 func (suite *HipChatClientTestSuite) TestClient_TestNewRequest() {
 	assert := assert.New(suite.T())
 
-	inURL, outURL := "bar", suite.server.URL + "/v2/bar"
-	inBody, outBody := &RoomListItem{ID: 1}, `{"id":1,"is_archived":false,"name":"","privacy":"","version":""}`+ "\n"
+	inURL, outURL := "bar", suite.server.URL+"/v2/bar"
+	inBody, outBody := &RoomListItem{ID: 1}, `{"id":1,"is_archived":false,"name":"","privacy":"","version":""}`+"\n"
 
 	req, err := suite.client.NewRequest("GET", inURL, inBody)
 	assert.Nil(err)
@@ -143,7 +143,7 @@ func (suite *HipChatClientTestSuite) TestDo() {
 	suite.client.Do(context.Background(), req, body)
 
 	want := &foo{"a"}
-	assert.Equal(want,body)
+	assert.Equal(want, body)
 }
 
 func (suite *HipChatClientTestSuite) TestDo_httpError() {
