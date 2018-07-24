@@ -120,7 +120,7 @@ func (suite *HipChatClientTestSuite) TestRoomsService_SetRoomTopic() {
 		w.WriteHeader(http.StatusNoContent)
 	})
 
-	resp, err := suite.client.Rooms.SetRoomTopic(context.Background(), "1", "hello")
+	resp, err := suite.client.Rooms.SetRoomTopic(context.Background(), "1", input.Topic)
 	assert.Nil(err)
 	assert.Equal(http.StatusNoContent, resp.StatusCode)
 }
@@ -140,6 +140,29 @@ func (suite *HipChatClientTestSuite) TestRoomsService_GetRoomStatistics() {
 
 	want := &RoomStatistic{100, ""}
 	assert.Equal(want, st)
+}
+
+func (suite *HipChatClientTestSuite) TestRoomsService_ShareLinkWithRoom() {
+	assert := assert.New(suite.T())
+	route := fmt.Sprintf(shareLinkWithRoomRoute, "1")
+	route = fmt.Sprintf("/%s/%s", apiVersion2, route)
+
+	input := shareLinkBody{"hello", "link"}
+
+	suite.mux.HandleFunc(route, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(r.Method, http.MethodPost)
+
+		link := shareLinkBody{"hello", "link"}
+		json.NewDecoder(r.Body).Decode(link)
+		assert.Equal(link, input)
+
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	resp, err := suite.client.Rooms.ShareLinkWithRoom(context.Background(), "1", input.Message, input.Link)
+	assert.Nil(err)
+	assert.Equal(http.StatusNoContent, resp.StatusCode)
+
 }
 
 func (suite *HipChatClientTestSuite) TestRoomsService_EmptyRoomParams() {

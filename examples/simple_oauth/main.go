@@ -22,7 +22,6 @@ func main() {
 	opts.StartIndex = 10
 	opts.MaxResults = 1
 
-	s, _, err := h.Rooms.GetRoomStatistics(ctx, "TestRoom_1")
+	_, err := h.Rooms.ShareLinkWithRoom(ctx, "TestRoom_1", "This is a link", "http://google.com")
 	fmt.Println(err)
-	fmt.Println(s)
 }

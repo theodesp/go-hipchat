@@ -17,6 +17,7 @@ const (
 	getRoomRoute   = "room/%v"
 	setRoomTopicRoute = "room/%v/topic"
 	getRoomStatisticsRoute = "room/%v/statistics"
+	shareLinkWithRoomRoute = "room/%v/share/link"
 )
 
 // RoomsService handles communication with the room related
@@ -317,6 +318,32 @@ func (s *RoomsService) GetRoomStatistics(ctx context.Context, roomIdOrName strin
 	return st, resp, nil
 }
 
+// Share a link with the room.
+//
+// Authentication required, with scope send_message.
+// Accessible by users.
+func (s *RoomsService) ShareLinkWithRoom(ctx context.Context, roomIdOrName string, message string, link string) (*PaginatedResponse, error) {
+	var u string
+	if roomIdOrName != "" {
+		u = fmt.Sprintf(shareLinkWithRoomRoute, roomIdOrName)
+	} else {
+		return nil, emptyParam
+	}
+
+	req, err := s.client.Post(u, shareLinkBody{message, link})
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.client.Do(ctx, req, nil)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, nil
+}
+
+
 // Creates a new Room Object
 func NewRoom(name string) *Room {
 	r:= &Room{}
@@ -329,11 +356,15 @@ func NewRoom(name string) *Room {
 	return r
 }
 
-// RoomsListResponse represents the response from the Rooms List request
 type roomsListResponse struct {
 	Items []*RoomListItem `json:"items,omitempty"`
 }
 
 type topicBody struct {
 	Topic string `json:"topic"`
+}
+
+type shareLinkBody struct {
+	Message string `json:"message"`
+	Link string `json:"link"`
 }
