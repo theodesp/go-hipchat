@@ -40,10 +40,10 @@ type RoomListItem struct {
 // RoomService.ListRooms
 type RoomsListOptions struct {
 	// Filter out private rooms
-	IncludePrivate bool `url:"	include-private,omitempty"`
+	IncludePrivate bool `url:"include-private,omitempty"`
 
 	// Filter rooms
-	IncludeArchived bool `url:"	include-archived,omitempty"`
+	IncludeArchived bool `url:"include-archived,omitempty"`
 	ListOptions
 }
 
@@ -53,8 +53,8 @@ type roomsListResponse struct {
 }
 
 // List non-archived rooms for this group.
-// Authentication required, with scope view_group or view_room.
-// Accessible by group clients, users.
+// Authentication required, with scope **view_group** or **view_room**.
+// Accessible by **group clients**, **users**.
 func (s *RoomsService) List(ctx context.Context, opt *RoomsListOptions) ([]*RoomListItem, *PaginatedResponse, error) {
 	opts, err := addUrlOptions(roomsListPrefix, opt)
 	if err != nil {

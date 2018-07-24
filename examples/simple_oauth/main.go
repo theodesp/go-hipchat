@@ -18,8 +18,7 @@ func main() {
 
 	h := hipchat.NewClient(tc)
 	opts := &hipchat.RoomsListOptions{}
-	opts.IncludeArchived = true
-	opts.MaxResults = 1
+	opts.IncludeArchived = false
 	rooms, _, _ := h.Rooms.List(ctx, opts)
 	for _, room := range rooms {
 		fmt.Println(room.Name)
