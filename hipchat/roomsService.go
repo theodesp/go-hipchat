@@ -23,12 +23,22 @@ type RoomsService service
 
 // RoomListItem represents a HipChat Room list item
 type RoomListItem struct {
+	// ID of the room.
 	ID         int64  `json:"id"`
+
+	// Whether or not this room is archived.
 	IsArchived bool   `json:"is_archived"`
+
+	// Name of the room.
 	Name       string `json:"name"`
+
+	// Privacy setting. Valid values: public, private.
 	Privacy    string `json:"privacy"`
+
+	// An etag-like random version string.
 	Version    string `json:"version"`
 
+	// URLs to retrieve room information
 	Links *RoomLinks `json:"links,omitempty"`
 }
 
