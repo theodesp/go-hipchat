@@ -196,4 +196,24 @@ func (s *RoomsService) Update(ctx context.Context, roomIdOrName string, room *Ro
 //Deletes a room and kicks the current participants.
 //Authentication required, with scope manage_rooms.
 //Accessible by group clients, users.
+func (s *RoomsService) Delete(ctx context.Context, roomIdOrName string) (*PaginatedResponse, error) {
+	var u string
+	if roomIdOrName != "" {
+		u = fmt.Sprintf(getRoomRoute, roomIdOrName)
+	} else {
+		return nil, emptyParam
+	}
+
+	req, err := s.client.Delete(u)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.client.Do(ctx, req, nil)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, nil
+}
 

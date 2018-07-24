@@ -44,12 +44,6 @@ func (suite *HipChatClientTestSuite) TestRoomsService_GetRoom() {
 	assert.Equal(want, room)
 }
 
-func (suite *HipChatClientTestSuite) TestRoomsService_GetRoomEmptyId() {
-	assert := assert.New(suite.T())
-	_, _, err := suite.client.Rooms.Get(context.Background(), "")
-	assert.EqualError(err, emptyParam.Error())
-}
-
 func (suite *HipChatClientTestSuite) TestRoomsService_UpdateRoom() {
 	assert := assert.New(suite.T())
 	route := fmt.Sprintf(getRoomRoute, "1")
@@ -65,4 +59,31 @@ func (suite *HipChatClientTestSuite) TestRoomsService_UpdateRoom() {
 	resp, err := suite.client.Rooms.Update(context.Background(), "1", room)
 	assert.Nil(err)
 	assert.Equal(http.StatusNoContent, resp.StatusCode)
+}
+
+func (suite *HipChatClientTestSuite) TestRoomsService_DeleteRoom() {
+	assert := assert.New(suite.T())
+	route := fmt.Sprintf(getRoomRoute, "1")
+	route = fmt.Sprintf("/%s/%s", apiVersion2, route)
+
+	suite.mux.HandleFunc(route, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(r.Method, http.MethodDelete)
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	resp, err := suite.client.Rooms.Delete(context.Background(), "1")
+	assert.Nil(err)
+	assert.Equal(http.StatusNoContent, resp.StatusCode)
+}
+
+func (suite *HipChatClientTestSuite) TestRoomsService_PassEmptyRoomId() {
+	assert := assert.New(suite.T())
+	_, _, err := suite.client.Rooms.Get(context.Background(), "")
+	assert.EqualError(err, emptyParam.Error())
+
+	_, err = suite.client.Rooms.Update(context.Background(), "", nil)
+	assert.EqualError(err, emptyParam.Error())
+
+	_, err = suite.client.Rooms.Delete(context.Background(), "")
+	assert.EqualError(err, emptyParam.Error())
 }
