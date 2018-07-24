@@ -183,6 +183,28 @@ func (suite *HipChatClientTestSuite) TestRoomsService_GetRoomParticipants() {
 	assert.Equal(want, participants)
 }
 
+func (suite *HipChatClientTestSuite) TestRoomsService_ReplyToRoomMessage() {
+	assert := assert.New(suite.T())
+	route := fmt.Sprintf(replyToRoomMessageRoute, "1")
+	route = fmt.Sprintf("/%s/%s", apiVersion2, route)
+
+	input := replyToMessageBody{"1", "hello"}
+
+	suite.mux.HandleFunc(route, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(r.Method, http.MethodPost)
+
+		reply := replyToMessageBody{"1", "hello"}
+		json.NewDecoder(r.Body).Decode(reply)
+		assert.Equal(reply, input)
+
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	resp, err := suite.client.Rooms.ReplyToRoomMessage(context.Background(), "1", input.MessageId, input.Message)
+	assert.Nil(err)
+	assert.Equal(http.StatusNoContent, resp.StatusCode)
+}
+
 func (suite *HipChatClientTestSuite) TestRoomsService_EmptyRoomParams() {
 	assert := assert.New(suite.T())
 	_, _, err := suite.client.Rooms.GetRoom(context.Background(), "")
