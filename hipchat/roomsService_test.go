@@ -62,7 +62,7 @@ func (suite *HipChatClientTestSuite) TestRoomsService_UpdateRoom() {
 
 	room := makeEmptyRoom()
 
-	_, resp, err := suite.client.Rooms.Update(context.Background(), "1", room)
+	resp, err := suite.client.Rooms.Update(context.Background(), "1", room)
 	assert.Nil(err)
 	assert.Equal(http.StatusNoContent, resp.StatusCode)
 }

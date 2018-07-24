@@ -172,24 +172,28 @@ func (s *RoomsService) Get(ctx context.Context, roomIdOrName string) (*Room, *Pa
 // Updates a room.
 // Authentication required, with scope admin_room.
 // Accessible by group clients, users.
-func (s *RoomsService) Update(ctx context.Context, roomIdOrName string, room *Room) (*Room, *PaginatedResponse, error) {
+func (s *RoomsService) Update(ctx context.Context, roomIdOrName string, room *Room) (*PaginatedResponse, error) {
 	var u string
 	if roomIdOrName != "" {
 		u = fmt.Sprintf(getRoomRoute, roomIdOrName)
 	} else {
-		return nil, nil, emptyParam
+		return nil, emptyParam
 	}
 
 	req, err := s.client.Put(u, room)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	resp, err := s.client.Do(ctx, req, room)
 	if err != nil {
-		return nil, resp, err
+		return resp, err
 	}
 
-	return room, resp, nil
+	return resp, nil
 }
+
+//Deletes a room and kicks the current participants.
+//Authentication required, with scope manage_rooms.
+//Accessible by group clients, users.
 
