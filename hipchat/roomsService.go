@@ -58,7 +58,7 @@ type RoomLinks struct {
 
 // Room represents a HipChat Room
 type Room struct {
-	*RoomListItem
+	RoomListItem
 
 	// XMPP/Jabber ID of the room.
 	XmppJid string `json:"xmpp_jid"`
@@ -257,7 +257,7 @@ func (s *RoomsService) CreateRoom(ctx context.Context, room *Room) (*Room, *Pagi
 // Creates a new Room Object
 func NewRoom(name string) *Room {
 	r:= &Room{}
-	r.RoomListItem = new(RoomListItem)
+	r.RoomListItem = RoomListItem{}
 	r.Name = name
 
 	// Room access defaults to 'public'.
