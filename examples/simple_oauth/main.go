@@ -6,6 +6,7 @@ import (
 	"go-hipchat/hipchat"
 	"golang.org/x/oauth2"
 	"os"
+	"strconv"
 )
 
 var authToken = os.Getenv("HIPCHAT_AUTH_TOKEN")
@@ -19,8 +20,10 @@ func main() {
 	h := hipchat.NewClient(tc)
 	opts := &hipchat.RoomsListOptions{}
 	opts.IncludeArchived = false
-	rooms, _, _ := h.Rooms.List(ctx, opts)
+	opts.MaxResults = 1
+	rooms, _, _ := h.Rooms.ListRooms(ctx, opts)
 	for _, room := range rooms {
-		fmt.Println(room.Name)
+		item, _, _ := h.Rooms.Get(ctx, strconv.FormatInt(room.ID, 10))
+		fmt.Println(item)
 	}
 }
