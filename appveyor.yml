@@ -30,7 +30,8 @@ install:
 
 # to run your custom scripts instead of automatic MSBuild
 build_script:
-  - go test -cpu=2 -race -v go-hipchat/...
+  - ps: cd hipchat
+  - go test -cpu=2 -race -v ./...
 
 test: off
 deploy: off
