@@ -5,6 +5,7 @@ import (
 	"go-hipchat/hipchat"
 	"golang.org/x/oauth2"
 	"os"
+	"fmt"
 )
 
 var authToken = os.Getenv("HIPCHAT_AUTH_TOKEN")
@@ -21,5 +22,7 @@ func main() {
 	opts.StartIndex = 10
 	opts.MaxResults = 1
 
-	h.Rooms.SetRoomTopic(ctx, "TestRoom_1", "This is a topic")
+	s, _, err := h.Rooms.GetRoomStatistics(ctx, "TestRoom_1")
+	fmt.Println(err)
+	fmt.Println(s)
 }

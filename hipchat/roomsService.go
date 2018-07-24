@@ -6,15 +6,17 @@ import (
 )
 
 const (
-	listRoomsRoute = "room"
-	getRoomRoute   = "room/%v"
-	setRoomTopicRoute = "room/%v/topic"
-
 	// Public Room access
 	RoomPrivacyPublic = "public"
 
 	// Private Room access
 	RoomPrivacyPrivate = "private"
+
+
+	listRoomsRoute = "room"
+	getRoomRoute   = "room/%v"
+	setRoomTopicRoute = "room/%v/topic"
+	getRoomStatisticsRoute = "room/%v/statistics"
 )
 
 // RoomsService handles communication with the room related
@@ -120,6 +122,16 @@ type RoomOwner struct {
 	Name string `json:"name"`
 }
 
+// RoomStatistic represents a HipChat Room Statistic
+type RoomStatistic struct {
+	// The number of messages sent in this room for its entire history.
+	MessagesSent int64 `json:"messages_sent"`
+
+	// Time of last activity (sent message) in the room in UNIX time (UTC).
+	// May be null in rare cases when the time is unknown.
+	LastActive string `json:"last_active"`
+}
+
 // RoomsListOptions specifies the optional parameters to the
 // RoomService.ListRooms
 type RoomsListOptions struct {
@@ -129,11 +141,6 @@ type RoomsListOptions struct {
 	// Filter rooms
 	IncludeArchived bool `url:"include-archived,omitempty"`
 	ListOptions
-}
-
-// RoomsListResponse represents the response from the Rooms List request
-type roomsListResponse struct {
-	Items []*RoomListItem `json:"items,omitempty"`
 }
 
 // List non-archived rooms for this group.
@@ -284,6 +291,32 @@ func (s *RoomsService) SetRoomTopic(ctx context.Context, roomIdOrName string, to
 	return resp, nil
 }
 
+// Fetch statistics for this room.
+//
+// Authentication required, with scope view_group or view_room.
+// Accessible by group clients, room clients, users.
+func (s *RoomsService) GetRoomStatistics(ctx context.Context, roomIdOrName string) (*RoomStatistic, *PaginatedResponse, error) {
+	var u string
+	if roomIdOrName != "" {
+		u = fmt.Sprintf(getRoomStatisticsRoute, roomIdOrName)
+	} else {
+		return nil, nil, emptyParam
+	}
+
+	req, err := s.client.Get(u)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	st := new(RoomStatistic)
+	resp, err := s.client.Do(ctx, req, st)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return st, resp, nil
+}
+
 // Creates a new Room Object
 func NewRoom(name string) *Room {
 	r:= &Room{}
@@ -296,8 +329,11 @@ func NewRoom(name string) *Room {
 	return r
 }
 
+// RoomsListResponse represents the response from the Rooms List request
+type roomsListResponse struct {
+	Items []*RoomListItem `json:"items,omitempty"`
+}
 
 type topicBody struct {
 	Topic string `json:"topic"`
 }
-

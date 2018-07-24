@@ -125,7 +125,24 @@ func (suite *HipChatClientTestSuite) TestRoomsService_SetRoomTopic() {
 	assert.Equal(http.StatusNoContent, resp.StatusCode)
 }
 
-func (suite *HipChatClientTestSuite) TestRoomsService_PassEmptyRoomId() {
+func (suite *HipChatClientTestSuite) TestRoomsService_GetRoomStatistics() {
+	assert := assert.New(suite.T())
+	route := fmt.Sprintf(getRoomStatisticsRoute, "1")
+	route = fmt.Sprintf("/%s/%s", apiVersion2, route)
+
+	suite.mux.HandleFunc(route, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(r.Method, http.MethodGet)
+		fmt.Fprint(w, `{"messages_sent":100}`)
+	})
+
+	st, _, err := suite.client.Rooms.GetRoomStatistics(context.Background(), "1")
+	assert.Nil(err)
+
+	want := &RoomStatistic{100, ""}
+	assert.Equal(want, st)
+}
+
+func (suite *HipChatClientTestSuite) TestRoomsService_EmptyRoomParams() {
 	assert := assert.New(suite.T())
 	_, _, err := suite.client.Rooms.GetRoom(context.Background(), "")
 	assert.EqualError(err, emptyParam.Error())
@@ -137,5 +154,8 @@ func (suite *HipChatClientTestSuite) TestRoomsService_PassEmptyRoomId() {
 	assert.EqualError(err, emptyParam.Error())
 
 	_, err = suite.client.Rooms.SetRoomTopic(context.Background(), "", "")
+	assert.EqualError(err, emptyParam.Error())
+
+	_, _, err = suite.client.Rooms.GetRoomStatistics(context.Background(), "")
 	assert.EqualError(err, emptyParam.Error())
 }
