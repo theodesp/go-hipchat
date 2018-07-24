@@ -175,11 +175,9 @@ func (s *RoomsService) ListRooms(ctx context.Context, opt *RoomsListOptions) ([]
 // Authentication required, with scope view_group or view_room.
 // Accessible by group clients, room clients, users.
 func (s *RoomsService) GetRoom(ctx context.Context, roomIdOrName string) (*Room, *PaginatedResponse, error) {
-	var u string
-	if roomIdOrName != "" {
-		u = fmt.Sprintf(getRoomRoute, roomIdOrName)
-	} else {
-		return nil, nil, emptyParam
+	var u, err = getRoomParam(roomIdOrName, getRoomRoute)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	req, err := s.client.Get(u)
@@ -201,11 +199,9 @@ func (s *RoomsService) GetRoom(ctx context.Context, roomIdOrName string) (*Room,
 // Authentication required, with scope admin_room.
 // Accessible by group clients, users.
 func (s *RoomsService) UpdateRoom(ctx context.Context, roomIdOrName string, room *Room) (*PaginatedResponse, error) {
-	var u string
-	if roomIdOrName != "" {
-		u = fmt.Sprintf(getRoomRoute, roomIdOrName)
-	} else {
-		return nil, emptyParam
+	var u, err = getRoomParam(roomIdOrName, getRoomRoute)
+	if err != nil {
+		return nil, err
 	}
 
 	req, err := s.client.Put(u, room)
@@ -226,11 +222,9 @@ func (s *RoomsService) UpdateRoom(ctx context.Context, roomIdOrName string, room
 // Authentication required, with scope manage_rooms.
 // Accessible by group clients, users.
 func (s *RoomsService) DeleteRoom(ctx context.Context, roomIdOrName string) (*PaginatedResponse, error) {
-	var u string
-	if roomIdOrName != "" {
-		u = fmt.Sprintf(getRoomRoute, roomIdOrName)
-	} else {
-		return nil, emptyParam
+	var u, err = getRoomParam(roomIdOrName, getRoomRoute)
+	if err != nil {
+		return nil, err
 	}
 
 	req, err := s.client.Delete(u)
@@ -273,11 +267,9 @@ func (s *RoomsService) CreateRoom(ctx context.Context, room *Room) (*Room, *Pagi
 // Authentication required, with scope admin_room.
 // Accessible by group clients, room clients, users.
 func (s *RoomsService) SetRoomTopic(ctx context.Context, roomIdOrName string, topic string) (*PaginatedResponse, error) {
-	var u string
-	if roomIdOrName != "" {
-		u = fmt.Sprintf(setRoomTopicRoute, roomIdOrName)
-	} else {
-		return nil, emptyParam
+	var u, err = getRoomParam(roomIdOrName, setRoomTopicRoute)
+	if err != nil {
+		return nil, err
 	}
 
 	req, err := s.client.Put(u, topicBody{topic})
@@ -298,11 +290,9 @@ func (s *RoomsService) SetRoomTopic(ctx context.Context, roomIdOrName string, to
 // Authentication required, with scope view_group or view_room.
 // Accessible by group clients, room clients, users.
 func (s *RoomsService) GetRoomStatistics(ctx context.Context, roomIdOrName string) (*RoomStatistic, *PaginatedResponse, error) {
-	var u string
-	if roomIdOrName != "" {
-		u = fmt.Sprintf(getRoomStatisticsRoute, roomIdOrName)
-	} else {
-		return nil, nil, emptyParam
+	var u, err = getRoomParam(roomIdOrName, getRoomStatisticsRoute)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	req, err := s.client.Get(u)
@@ -324,11 +314,9 @@ func (s *RoomsService) GetRoomStatistics(ctx context.Context, roomIdOrName strin
 // Authentication required, with scope send_message.
 // Accessible by users.
 func (s *RoomsService) ShareLinkWithRoom(ctx context.Context, roomIdOrName string, message string, link string) (*PaginatedResponse, error) {
-	var u string
-	if roomIdOrName != "" {
-		u = fmt.Sprintf(shareLinkWithRoomRoute, roomIdOrName)
-	} else {
-		return nil, emptyParam
+	var u, err = getRoomParam(roomIdOrName, shareLinkWithRoomRoute)
+	if err != nil {
+		return nil, err
 	}
 
 	req, err := s.client.Post(u, shareLinkBody{message, link})
@@ -349,11 +337,9 @@ func (s *RoomsService) ShareLinkWithRoom(ctx context.Context, roomIdOrName strin
 // Authentication required, with scope view_room.
 // Accessible by group clients, room clients, users.
 func (s *RoomsService) GetRoomParticipants(ctx context.Context, roomIdOrName string, opt *RoomParticipantsOptions) ([]*UserListItem, *PaginatedResponse, error) {
-	var u string
-	if roomIdOrName != "" {
-		u = fmt.Sprintf(getRoomParticipantsRoute, roomIdOrName)
-	} else {
-		return nil, nil, emptyParam
+	var u, err = getRoomParam(roomIdOrName, getRoomParticipantsRoute)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	opts, err := addUrlOptions(u, opt)
@@ -380,11 +366,9 @@ func (s *RoomsService) GetRoomParticipants(ctx context.Context, roomIdOrName str
 // Authentication required, with scope send_message.
 // Accessible by users.
 func (s *RoomsService) ReplyToRoomMessage(ctx context.Context, roomIdOrName string, messageId string, message string) (*PaginatedResponse, error) {
-	var u string
-	if roomIdOrName != "" {
-		u = fmt.Sprintf(replyToRoomMessageRoute, roomIdOrName)
-	} else {
-		return nil, emptyParam
+	var u, err = getRoomParam(roomIdOrName, replyToRoomMessageRoute)
+	if err != nil {
+		return nil, err
 	}
 
 	req, err := s.client.Post(u, replyToMessageBody{messageId, message})
@@ -405,11 +389,9 @@ func (s *RoomsService) ReplyToRoomMessage(ctx context.Context, roomIdOrName stri
 // Authentication required, with scope send_message.
 // Accessible by users.
 func (s *RoomsService) SendRoomMessage(ctx context.Context, roomIdOrName string, message string) (*RoomMessage, *PaginatedResponse, error) {
-	var u string
-	if roomIdOrName != "" {
-		u = fmt.Sprintf(sendRoomMessageRoute, roomIdOrName)
-	} else {
-		return nil, nil, emptyParam
+	var u, err = getRoomParam(roomIdOrName, sendRoomMessageRoute)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	req, err := s.client.Post(u, sendMessageBody{message})
@@ -424,6 +406,14 @@ func (s *RoomsService) SendRoomMessage(ctx context.Context, roomIdOrName string,
 	}
 
 	return m, resp, nil
+}
+
+func getRoomParam(roomIdOrName string, route string) (string, error)  {
+	if roomIdOrName != "" {
+		return fmt.Sprintf(route, roomIdOrName), nil
+	} else {
+		return "", emptyParam
+	}
 }
 
 // Creates a new Room Object
