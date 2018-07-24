@@ -27,3 +27,14 @@ func addUrlOptions(s string, opt interface{}) (string, error) {
 	u.RawQuery = qs.Encode()
 	return u.String(), nil
 }
+
+func makeEmptyRoom() *Room  {
+	roomListItem := &RoomListItem{ID: int64(1), IsArchived: false, Name: "", Privacy: "", Version: ""}
+	room := &Room{
+		roomListItem,
+		"","","", false, "",
+		false, "", "", nil, nil,
+	}
+
+	return room
+}

@@ -183,6 +183,8 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Pag
 	}
 
 	defer func() {
+		// Drain up to 512 bytes and close the body to let the Transport reuse the connection
+		io.CopyN(ioutil.Discard, resp.Body, 512)
 		err := resp.Body.Close()
 		if err != nil {
 			log.Println("closing response body failed")
@@ -199,7 +201,9 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Pag
 	bodyReader := bytes.NewReader(body)
 
 	if v != nil {
-		if w, ok := v.(io.Writer); ok {
+		if len(body) == 0 && resp.StatusCode == 204 {
+			return response, nil
+		} else if w, ok := v.(io.Writer); ok {
 			_, err = io.Copy(w, bodyReader)
 			if err != nil {
 				return nil, err
