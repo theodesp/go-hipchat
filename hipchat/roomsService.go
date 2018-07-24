@@ -18,6 +18,7 @@ const (
 	setRoomTopicRoute = "room/%v/topic"
 	getRoomStatisticsRoute = "room/%v/statistics"
 	shareLinkWithRoomRoute = "room/%v/share/link"
+	getRoomParticipantsRoute = "room/%v/participant"
 )
 
 // RoomsService handles communication with the room related
@@ -91,7 +92,7 @@ type Room struct {
 	// May be null.
 	GuestAccessUrl string `json:"guest_access_url"`
 
-	Owner *RoomOwner `json:"owner,omitempty"`
+	Owner *UserListItem `json:"owner,omitempty"`
 
 	// Statistics for this room.
 	Statistics *struct{
@@ -100,27 +101,6 @@ type Room struct {
 			Self string `json:"self"`
 		} `json:"links,omitempty"`
 	} `json:"statistics,omitempty"`
-}
-
-// RoomOwner represents a HipChat Room Owner
-type RoomOwner struct {
-	// User's @mention name
-	MentionName string `json:"mention_name"`
-
-	// An etag-like random version string.
-	Version    string `json:"version"`
-
-	// The user ID
-	Id int64  `json:"id"`
-
-	// URLs to retrieve user information
-	Links *struct{
-		// The link to use to retrieve the user information
-		Self string `json:"self"`
-	} `json:"links,omitempty"`
-
-	// The display user name
-	Name string `json:"name"`
 }
 
 // RoomStatistic represents a HipChat Room Statistic
@@ -141,6 +121,16 @@ type RoomsListOptions struct {
 
 	// Filter rooms
 	IncludeArchived bool `url:"include-archived,omitempty"`
+	ListOptions
+}
+
+// RoomParticipantsOptions specifies the optional parameters to the
+// RoomService.GetRoomParticipants
+type RoomParticipantsOptions struct {
+	// Filter users by status (boolean). Only valid for private rooms.
+	//
+	// Defaults to 'false'.
+	IncludeOffline bool `url:"include-offline,omitempty"`
 	ListOptions
 }
 
@@ -343,6 +333,36 @@ func (s *RoomsService) ShareLinkWithRoom(ctx context.Context, roomIdOrName strin
 	return resp, nil
 }
 
+// Gets all participants in this room.
+//
+// Authentication required, with scope view_room.
+// Accessible by group clients, room clients, users.
+func (s *RoomsService) GetRoomParticipants(ctx context.Context, roomIdOrName string, opt *RoomParticipantsOptions) ([]*UserListItem, *PaginatedResponse, error) {
+	var u string
+	if roomIdOrName != "" {
+		u = fmt.Sprintf(getRoomParticipantsRoute, roomIdOrName)
+	} else {
+		return nil, nil, emptyParam
+	}
+
+	opts, err := addUrlOptions(u, opt)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	req, err := s.client.Get(opts)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var participants *usersListResponse
+	resp, err := s.client.Do(ctx, req, &participants)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return participants.Items, resp, nil
+}
 
 // Creates a new Room Object
 func NewRoom(name string) *Room {

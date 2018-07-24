@@ -162,7 +162,25 @@ func (suite *HipChatClientTestSuite) TestRoomsService_ShareLinkWithRoom() {
 	resp, err := suite.client.Rooms.ShareLinkWithRoom(context.Background(), "1", input.Message, input.Link)
 	assert.Nil(err)
 	assert.Equal(http.StatusNoContent, resp.StatusCode)
+}
 
+func (suite *HipChatClientTestSuite) TestRoomsService_GetRoomParticipants() {
+	assert := assert.New(suite.T())
+	route := fmt.Sprintf(getRoomParticipantsRoute, "1")
+	route = fmt.Sprintf("/%s/%s", apiVersion2, route)
+
+	suite.mux.HandleFunc(route, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(r.Method, http.MethodGet)
+		fmt.Fprint(w, `{"items":[{"id":1,"name":"Theo"},{"id":2,"name":"Alex"}]}`)
+	})
+
+	participants, _, err := suite.client.Rooms.GetRoomParticipants(context.Background(), "1", nil)
+	assert.Nil(err)
+
+	want := []*UserListItem{
+		{ID: int64(1), Name: "Theo", Version: ""},
+		{ID: int64(2), Name: "Alex", Version: ""}}
+	assert.Equal(want, participants)
 }
 
 func (suite *HipChatClientTestSuite) TestRoomsService_EmptyRoomParams() {
@@ -180,5 +198,8 @@ func (suite *HipChatClientTestSuite) TestRoomsService_EmptyRoomParams() {
 	assert.EqualError(err, emptyParam.Error())
 
 	_, _, err = suite.client.Rooms.GetRoomStatistics(context.Background(), "")
+	assert.EqualError(err, emptyParam.Error())
+
+	_, _, err = suite.client.Rooms.GetRoomParticipants(context.Background(), "", nil)
 	assert.EqualError(err, emptyParam.Error())
 }

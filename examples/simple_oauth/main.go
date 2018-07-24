@@ -17,11 +17,11 @@ func main() {
 	tc := oauth2.NewClient(ctx, ts)
 
 	h := hipchat.NewClient(tc)
-	opts := &hipchat.RoomsListOptions{}
-	opts.IncludeArchived = false
-	opts.StartIndex = 10
-	opts.MaxResults = 1
+	opts := &hipchat.RoomParticipantsOptions{}
+	opts.StartIndex = 0
+	opts.MaxResults = 100
 
-	_, err := h.Rooms.ShareLinkWithRoom(ctx, "TestRoom_1", "This is a link", "http://google.com")
+	p, _, err := h.Rooms.GetRoomParticipants(ctx, "TestRoom_1", opts)
 	fmt.Println(err)
+	fmt.Println(p)
 }
