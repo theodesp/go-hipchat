@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"net/http"
+	"encoding/json"
 )
 
 func (suite *HipChatClientTestSuite) TestRoomsService_ListRooms() {
@@ -32,14 +33,14 @@ func (suite *HipChatClientTestSuite) TestRoomsService_GetRoom() {
 
 	suite.mux.HandleFunc(route, func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(r.Method, http.MethodGet)
-		fmt.Fprint(w, `{"id":1,"is_archived": false, "name": "hello"}`)
+		fmt.Fprint(w, `{"id":1,"privacy":"public","name": "hello"}`)
 	})
 
-	room, _, err := suite.client.Rooms.Get(context.Background(), "1")
+	room, _, err := suite.client.Rooms.GetRoom(context.Background(), "1")
 	assert.Nil(err)
 
-	want := makeEmptyRoom()
-	want.Name = "hello"
+	want := NewRoom("hello")
+	want.ID = int64(1)
 
 	assert.Equal(want, room)
 }
@@ -54,9 +55,9 @@ func (suite *HipChatClientTestSuite) TestRoomsService_UpdateRoom() {
 		w.WriteHeader(http.StatusNoContent)
 	})
 
-	room := makeEmptyRoom()
+	room := NewRoom("")
 
-	resp, err := suite.client.Rooms.Update(context.Background(), "1", room)
+	resp, err := suite.client.Rooms.UpdateRoom(context.Background(), "1", room)
 	assert.Nil(err)
 	assert.Equal(http.StatusNoContent, resp.StatusCode)
 }
@@ -71,19 +72,45 @@ func (suite *HipChatClientTestSuite) TestRoomsService_DeleteRoom() {
 		w.WriteHeader(http.StatusNoContent)
 	})
 
-	resp, err := suite.client.Rooms.Delete(context.Background(), "1")
+	resp, err := suite.client.Rooms.DeleteRoom(context.Background(), "1")
 	assert.Nil(err)
 	assert.Equal(http.StatusNoContent, resp.StatusCode)
 }
 
+func (suite *HipChatClientTestSuite) TestRoomsService_CreateRoom() {
+	assert := assert.New(suite.T())
+	route := fmt.Sprintf("/%s/%s", apiVersion2, listRoomsRoute)
+
+	room := NewRoom("hello")
+
+	suite.mux.HandleFunc(route, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(r.Method, http.MethodPost)
+
+		v := NewRoom("hello")
+		json.NewDecoder(r.Body).Decode(v)
+		assert.Equal(v, room)
+
+		w.WriteHeader(http.StatusCreated)
+		fmt.Fprint(w, `{"id":1}`)
+	})
+
+	v, resp, err := suite.client.Rooms.CreateRoom(context.Background(), room)
+	want := NewRoom("hello")
+	want.ID = int64(1)
+
+	assert.Nil(err)
+	assert.Equal(want, v)
+	assert.Equal(http.StatusCreated, resp.StatusCode)
+}
+
 func (suite *HipChatClientTestSuite) TestRoomsService_PassEmptyRoomId() {
 	assert := assert.New(suite.T())
-	_, _, err := suite.client.Rooms.Get(context.Background(), "")
+	_, _, err := suite.client.Rooms.GetRoom(context.Background(), "")
 	assert.EqualError(err, emptyParam.Error())
 
-	_, err = suite.client.Rooms.Update(context.Background(), "", nil)
+	_, err = suite.client.Rooms.UpdateRoom(context.Background(), "", nil)
 	assert.EqualError(err, emptyParam.Error())
 
-	_, err = suite.client.Rooms.Delete(context.Background(), "")
+	_, err = suite.client.Rooms.DeleteRoom(context.Background(), "")
 	assert.EqualError(err, emptyParam.Error())
 }

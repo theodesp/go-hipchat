@@ -8,6 +8,12 @@ import (
 const (
 	listRoomsRoute = "room"
 	getRoomRoute   = "room/%v"
+
+	// Public Room access
+	RoomPrivacyPublic = "public"
+
+	// Private Room access
+	RoomPrivacyPrivate = "private"
 )
 
 // RoomsService handles communication with the room related
@@ -147,7 +153,7 @@ func (s *RoomsService) ListRooms(ctx context.Context, opt *RoomsListOptions) ([]
 //
 // Authentication required, with scope view_group or view_room.
 // Accessible by group clients, room clients, users.
-func (s *RoomsService) Get(ctx context.Context, roomIdOrName string) (*Room, *PaginatedResponse, error) {
+func (s *RoomsService) GetRoom(ctx context.Context, roomIdOrName string) (*Room, *PaginatedResponse, error) {
 	var u string
 	if roomIdOrName != "" {
 		u = fmt.Sprintf(getRoomRoute, roomIdOrName)
@@ -172,7 +178,7 @@ func (s *RoomsService) Get(ctx context.Context, roomIdOrName string) (*Room, *Pa
 // Updates a room.
 // Authentication required, with scope admin_room.
 // Accessible by group clients, users.
-func (s *RoomsService) Update(ctx context.Context, roomIdOrName string, room *Room) (*PaginatedResponse, error) {
+func (s *RoomsService) UpdateRoom(ctx context.Context, roomIdOrName string, room *Room) (*PaginatedResponse, error) {
 	var u string
 	if roomIdOrName != "" {
 		u = fmt.Sprintf(getRoomRoute, roomIdOrName)
@@ -196,7 +202,7 @@ func (s *RoomsService) Update(ctx context.Context, roomIdOrName string, room *Ro
 //Deletes a room and kicks the current participants.
 //Authentication required, with scope manage_rooms.
 //Accessible by group clients, users.
-func (s *RoomsService) Delete(ctx context.Context, roomIdOrName string) (*PaginatedResponse, error) {
+func (s *RoomsService) DeleteRoom(ctx context.Context, roomIdOrName string) (*PaginatedResponse, error) {
 	var u string
 	if roomIdOrName != "" {
 		u = fmt.Sprintf(getRoomRoute, roomIdOrName)
@@ -215,5 +221,38 @@ func (s *RoomsService) Delete(ctx context.Context, roomIdOrName string) (*Pagina
 	}
 
 	return resp, nil
+}
+
+//Creates a new room.
+//Authentication required, with scope manage_rooms.
+//Accessible by group clients, users.
+func (s *RoomsService) CreateRoom(ctx context.Context, room *Room) (*Room, *PaginatedResponse, error) {
+	req, err := s.client.Post(listRoomsRoute, room)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	r := new(Room)
+	resp, err := s.client.Do(ctx, req, r)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	room.ID = r.ID
+	room.Links = r.Links
+
+	return room, resp, nil
+}
+
+// Creates a new Room Object
+func NewRoom(name string) *Room {
+	r:= &Room{}
+	r.RoomListItem = new(RoomListItem)
+	r.Name = name
+
+	// Room access defaults to 'public'.
+	r.Privacy = RoomPrivacyPublic
+
+	return r
 }
 
