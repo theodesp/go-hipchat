@@ -103,6 +103,28 @@ func (suite *HipChatClientTestSuite) TestRoomsService_CreateRoom() {
 	assert.Equal(http.StatusCreated, resp.StatusCode)
 }
 
+func (suite *HipChatClientTestSuite) TestRoomsService_SetRoomTopic() {
+	assert := assert.New(suite.T())
+	route := fmt.Sprintf(setRoomTopicRoute, "1")
+	route = fmt.Sprintf("/%s/%s", apiVersion2, route)
+
+	input := topicBody{"hello"}
+
+	suite.mux.HandleFunc(route, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(r.Method, http.MethodPut)
+
+		topic := topicBody{"hello"}
+		json.NewDecoder(r.Body).Decode(topic)
+		assert.Equal(topic, input)
+
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	resp, err := suite.client.Rooms.SetRoomTopic(context.Background(), "1", "hello")
+	assert.Nil(err)
+	assert.Equal(http.StatusNoContent, resp.StatusCode)
+}
+
 func (suite *HipChatClientTestSuite) TestRoomsService_PassEmptyRoomId() {
 	assert := assert.New(suite.T())
 	_, _, err := suite.client.Rooms.GetRoom(context.Background(), "")
@@ -112,5 +134,8 @@ func (suite *HipChatClientTestSuite) TestRoomsService_PassEmptyRoomId() {
 	assert.EqualError(err, emptyParam.Error())
 
 	_, err = suite.client.Rooms.DeleteRoom(context.Background(), "")
+	assert.EqualError(err, emptyParam.Error())
+
+	_, err = suite.client.Rooms.SetRoomTopic(context.Background(), "", "")
 	assert.EqualError(err, emptyParam.Error())
 }

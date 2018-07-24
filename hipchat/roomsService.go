@@ -8,6 +8,7 @@ import (
 const (
 	listRoomsRoute = "room"
 	getRoomRoute   = "room/%v"
+	setRoomTopicRoute = "room/%v/topic"
 
 	// Public Room access
 	RoomPrivacyPublic = "public"
@@ -136,6 +137,7 @@ type roomsListResponse struct {
 }
 
 // List non-archived rooms for this group.
+//
 // Authentication required, with scope view_group or view_room.
 // Accessible by group clients, users.
 func (s *RoomsService) ListRooms(ctx context.Context, opt *RoomsListOptions) ([]*RoomListItem, *PaginatedResponse, error) {
@@ -186,6 +188,7 @@ func (s *RoomsService) GetRoom(ctx context.Context, roomIdOrName string) (*Room,
 }
 
 // Updates a room.
+//
 // Authentication required, with scope admin_room.
 // Accessible by group clients, users.
 func (s *RoomsService) UpdateRoom(ctx context.Context, roomIdOrName string, room *Room) (*PaginatedResponse, error) {
@@ -209,9 +212,10 @@ func (s *RoomsService) UpdateRoom(ctx context.Context, roomIdOrName string, room
 	return resp, nil
 }
 
-//Deletes a room and kicks the current participants.
-//Authentication required, with scope manage_rooms.
-//Accessible by group clients, users.
+// Deletes a room and kicks the current participants.
+//
+// Authentication required, with scope manage_rooms.
+// Accessible by group clients, users.
 func (s *RoomsService) DeleteRoom(ctx context.Context, roomIdOrName string) (*PaginatedResponse, error) {
 	var u string
 	if roomIdOrName != "" {
@@ -233,9 +237,10 @@ func (s *RoomsService) DeleteRoom(ctx context.Context, roomIdOrName string) (*Pa
 	return resp, nil
 }
 
-//Creates a new room.
-//Authentication required, with scope manage_rooms.
-//Accessible by group clients, users.
+// Creates a new room.
+//
+// Authentication required, with scope manage_rooms.
+// Accessible by group clients, users.
 func (s *RoomsService) CreateRoom(ctx context.Context, room *Room) (*Room, *PaginatedResponse, error) {
 	req, err := s.client.Post(listRoomsRoute, room)
 	if err != nil {
@@ -254,6 +259,31 @@ func (s *RoomsService) CreateRoom(ctx context.Context, room *Room) (*Room, *Pagi
 	return room, resp, nil
 }
 
+// Set a room's topic. Useful for displaying statistics, important links, server status, you name it!
+//
+// Authentication required, with scope admin_room.
+// Accessible by group clients, room clients, users.
+func (s *RoomsService) SetRoomTopic(ctx context.Context, roomIdOrName string, topic string) (*PaginatedResponse, error) {
+	var u string
+	if roomIdOrName != "" {
+		u = fmt.Sprintf(setRoomTopicRoute, roomIdOrName)
+	} else {
+		return nil, emptyParam
+	}
+
+	req, err := s.client.Put(u, topicBody{topic})
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.client.Do(ctx, req, nil)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, nil
+}
+
 // Creates a new Room Object
 func NewRoom(name string) *Room {
 	r:= &Room{}
@@ -264,5 +294,10 @@ func NewRoom(name string) *Room {
 	r.Privacy = RoomPrivacyPublic
 
 	return r
+}
+
+
+type topicBody struct {
+	Topic string `json:"topic"`
 }
 
