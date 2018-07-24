@@ -20,6 +20,7 @@ const (
 	shareLinkWithRoomRoute = "room/%v/share/link"
 	getRoomParticipantsRoute = "room/%v/participant"
 	replyToRoomMessageRoute = "room/%v/reply"
+	sendRoomMessageRoute = "room/%v/message"
 )
 
 // RoomsService handles communication with the room related
@@ -29,8 +30,8 @@ type RoomsService service
 
 // RoomListItem represents a HipChat Room list item
 type RoomListItem struct {
-	// ID of the room.
-	ID         int64  `json:"id"`
+	// Id of the room.
+	Id         int64  `json:"id"`
 
 	// Whether or not this room is archived.
 	IsArchived bool   `json:"is_archived"`
@@ -66,7 +67,7 @@ type RoomLinks struct {
 type Room struct {
 	RoomListItem
 
-	// XMPP/Jabber ID of the room.
+	// XMPP/Jabber Id of the room.
 	XmppJid string `json:"xmpp_jid"`
 
 	// Time the room was created in ISO 8601 format UTC.
@@ -112,6 +113,15 @@ type RoomStatistic struct {
 	// Time of last activity (sent message) in the room in UNIX time (UTC).
 	// May be null in rare cases when the time is unknown.
 	LastActive string `json:"last_active"`
+}
+
+// RoomMessage represents a HipChat Room Message
+type RoomMessage struct {
+	// The unique identifier of the sent message.
+	Id string `json:"id"`
+
+	// The UTC timestamp representing when the message was processed.
+	Timestamp string `json:"timestamp"`
 }
 
 // RoomsListOptions specifies the optional parameters to the
@@ -252,7 +262,7 @@ func (s *RoomsService) CreateRoom(ctx context.Context, room *Room) (*Room, *Pagi
 		return nil, resp, err
 	}
 
-	room.ID = r.ID
+	room.Id = r.Id
 	room.Links = r.Links
 
 	return room, resp, nil
@@ -390,6 +400,32 @@ func (s *RoomsService) ReplyToRoomMessage(ctx context.Context, roomIdOrName stri
 	return resp, nil
 }
 
+// Send a message to a room.
+//
+// Authentication required, with scope send_message.
+// Accessible by users.
+func (s *RoomsService) SendRoomMessage(ctx context.Context, roomIdOrName string, message string) (*RoomMessage, *PaginatedResponse, error) {
+	var u string
+	if roomIdOrName != "" {
+		u = fmt.Sprintf(sendRoomMessageRoute, roomIdOrName)
+	} else {
+		return nil, nil, emptyParam
+	}
+
+	req, err := s.client.Post(u, sendMessageBody{message})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	m := new(RoomMessage)
+	resp, err := s.client.Do(ctx, req, m)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return m, resp, nil
+}
+
 // Creates a new Room Object
 func NewRoom(name string) *Room {
 	r:= &Room{}
@@ -408,6 +444,10 @@ type roomsListResponse struct {
 
 type topicBody struct {
 	Topic string `json:"topic"`
+}
+
+type sendMessageBody struct {
+	Message string `json:"message"`
 }
 
 type shareLinkBody struct {

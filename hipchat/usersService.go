@@ -2,8 +2,8 @@ package hipchat
 
 // UserListItem represents a HipChat User list item
 type UserListItem struct {
-	// The user ID.
-	ID         int64  `json:"id"`
+	// The user Id.
+	Id         int64  `json:"id"`
 
 	// User's @mention name.
 	MentionName string   `json:"mention_name"`

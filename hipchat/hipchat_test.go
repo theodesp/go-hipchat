@@ -70,7 +70,7 @@ func (suite *HipChatClientTestSuite) TestClient_TestNewRequest() {
 	assert := assert.New(suite.T())
 
 	inURL, outURL := "bar", suite.server.URL+"/v2/bar"
-	inBody, outBody := &RoomListItem{ID: 1}, `{"id":1,"is_archived":false,"name":"","privacy":"","version":""}`+"\n"
+	inBody, outBody := &RoomListItem{Id: 1}, `{"id":1,"is_archived":false,"name":"","privacy":"","version":""}`+"\n"
 
 	req, err := suite.client.NewRequest("GET", inURL, inBody)
 	assert.Nil(err)

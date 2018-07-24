@@ -21,7 +21,7 @@ func main() {
 	opts.StartIndex = 0
 	opts.MaxResults = 100
 
-	p, _, err := h.Rooms.GetRoomParticipants(ctx, "TestRoom_1", opts)
+	m, _, err := h.Rooms.SendRoomMessage(ctx, "TestRoom_1", "How are you?")
 	fmt.Println(err)
-	fmt.Println(p)
+	fmt.Println(m)
 }
