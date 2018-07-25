@@ -3,6 +3,7 @@ package hipchat
 import (
 	"context"
 	"fmt"
+	"strings"
 )
 
 const (
@@ -22,6 +23,7 @@ const (
 	replyToRoomMessageRoute = "room/%v/reply"
 	sendRoomMessageRoute = "room/%v/message"
 	getRoomMembersRoute = "room/%v/member"
+	removeRoomMemberRoute = "room/%v/member/"
 )
 
 // RoomsService handles communication with the room related
@@ -433,6 +435,33 @@ func (s *RoomsService) GetRoomMembers(ctx context.Context, roomIdOrName string, 
 	return members.Items, resp, nil
 }
 
+// Removes a member from a private room.
+//
+// Authentication required, with scope admin_room.
+// Accessible by group clients, room clients, users.
+func (s *RoomsService) RemoveRoomMember(ctx context.Context, roomIdOrName string, userIdOrName string) (*PaginatedResponse, error) {
+	var u, err = getRoomResourcePath(roomIdOrName, removeRoomMemberRoute)
+	if err != nil {
+		return nil, err
+	}
+
+	if userIdOrName == "" {
+		return nil, emptyParam
+	}
+
+	u = strings.Join([]string{u, userIdOrName}, "")
+	req, err := s.client.Delete(u)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.client.Do(ctx, req, nil)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, nil
+}
 
 // Creates a new Room Object
 func NewRoom(name string) *Room {
