@@ -14,16 +14,16 @@ const (
 	RoomPrivacyPrivate = "private"
 
 
-	listRoomsRoute = "room"
-	getRoomRoute   = "room/%v"
-	setRoomTopicRoute = "room/%v/topic"
-	getRoomStatisticsRoute = "room/%v/statistics"
-	shareLinkWithRoomRoute = "room/%v/share/link"
+	listRoomsRoute           = "room"
+	getRoomRoute             = "room/%v"
+	setRoomTopicRoute        = "room/%v/topic"
+	getRoomStatisticsRoute   = "room/%v/statistics"
+	shareLinkWithRoomRoute   = "room/%v/share/link"
 	getRoomParticipantsRoute = "room/%v/participant"
-	replyToRoomMessageRoute = "room/%v/reply"
-	sendRoomMessageRoute = "room/%v/message"
-	getRoomMembersRoute = "room/%v/member"
-	removeRoomMemberRoute = "room/%v/member/"
+	replyToRoomMessageRoute  = "room/%v/reply"
+	sendRoomMessageRoute     = "room/%v/message"
+	getRoomMembersRoute      = "room/%v/member"
+	roomMemberRoute          = "room/%v/member/"
 )
 
 // RoomsService handles communication with the room related
@@ -435,12 +435,42 @@ func (s *RoomsService) GetRoomMembers(ctx context.Context, roomIdOrName string, 
 	return members.Items, resp, nil
 }
 
+// Adds a member to a private room and sends member's unavailable presence to all
+// room members asynchronously.
+//
+// Authentication required, with scope admin_room.
+// Accessible by group clients, room clients, users.
+func (s *RoomsService) AddRoomMember(ctx context.Context, roomIdOrName string, userIdOrName string) (*PaginatedResponse, error) {
+	var u, err = getRoomResourcePath(roomIdOrName, roomMemberRoute)
+	if err != nil {
+		return nil, err
+	}
+
+	if userIdOrName == "" {
+		return nil, emptyParam
+	}
+
+	u = strings.Join([]string{u, userIdOrName}, "")
+	// TODO: Investigate room_roles body param
+	req, err := s.client.Put(u, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.client.Do(ctx, req, nil)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, nil
+}
+
 // Removes a member from a private room.
 //
 // Authentication required, with scope admin_room.
 // Accessible by group clients, room clients, users.
 func (s *RoomsService) RemoveRoomMember(ctx context.Context, roomIdOrName string, userIdOrName string) (*PaginatedResponse, error) {
-	var u, err = getRoomResourcePath(roomIdOrName, removeRoomMemberRoute)
+	var u, err = getRoomResourcePath(roomIdOrName, roomMemberRoute)
 	if err != nil {
 		return nil, err
 	}
