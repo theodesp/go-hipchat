@@ -21,6 +21,7 @@ const (
 	getRoomParticipantsRoute = "room/%v/participant"
 	replyToRoomMessageRoute = "room/%v/reply"
 	sendRoomMessageRoute = "room/%v/message"
+	getRoomMembersRoute = "room/%v/member"
 )
 
 // RoomsService handles communication with the room related
@@ -175,7 +176,7 @@ func (s *RoomsService) ListRooms(ctx context.Context, opt *RoomsListOptions) ([]
 // Authentication required, with scope view_group or view_room.
 // Accessible by group clients, room clients, users.
 func (s *RoomsService) GetRoom(ctx context.Context, roomIdOrName string) (*Room, *PaginatedResponse, error) {
-	var u, err = getRoomParam(roomIdOrName, getRoomRoute)
+	var u, err = getRoomResourcePath(roomIdOrName, getRoomRoute)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -199,7 +200,7 @@ func (s *RoomsService) GetRoom(ctx context.Context, roomIdOrName string) (*Room,
 // Authentication required, with scope admin_room.
 // Accessible by group clients, users.
 func (s *RoomsService) UpdateRoom(ctx context.Context, roomIdOrName string, room *Room) (*PaginatedResponse, error) {
-	var u, err = getRoomParam(roomIdOrName, getRoomRoute)
+	var u, err = getRoomResourcePath(roomIdOrName, getRoomRoute)
 	if err != nil {
 		return nil, err
 	}
@@ -222,7 +223,7 @@ func (s *RoomsService) UpdateRoom(ctx context.Context, roomIdOrName string, room
 // Authentication required, with scope manage_rooms.
 // Accessible by group clients, users.
 func (s *RoomsService) DeleteRoom(ctx context.Context, roomIdOrName string) (*PaginatedResponse, error) {
-	var u, err = getRoomParam(roomIdOrName, getRoomRoute)
+	var u, err = getRoomResourcePath(roomIdOrName, getRoomRoute)
 	if err != nil {
 		return nil, err
 	}
@@ -267,7 +268,7 @@ func (s *RoomsService) CreateRoom(ctx context.Context, room *Room) (*Room, *Pagi
 // Authentication required, with scope admin_room.
 // Accessible by group clients, room clients, users.
 func (s *RoomsService) SetRoomTopic(ctx context.Context, roomIdOrName string, topic string) (*PaginatedResponse, error) {
-	var u, err = getRoomParam(roomIdOrName, setRoomTopicRoute)
+	var u, err = getRoomResourcePath(roomIdOrName, setRoomTopicRoute)
 	if err != nil {
 		return nil, err
 	}
@@ -290,7 +291,7 @@ func (s *RoomsService) SetRoomTopic(ctx context.Context, roomIdOrName string, to
 // Authentication required, with scope view_group or view_room.
 // Accessible by group clients, room clients, users.
 func (s *RoomsService) GetRoomStatistics(ctx context.Context, roomIdOrName string) (*RoomStatistic, *PaginatedResponse, error) {
-	var u, err = getRoomParam(roomIdOrName, getRoomStatisticsRoute)
+	var u, err = getRoomResourcePath(roomIdOrName, getRoomStatisticsRoute)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -314,7 +315,7 @@ func (s *RoomsService) GetRoomStatistics(ctx context.Context, roomIdOrName strin
 // Authentication required, with scope send_message.
 // Accessible by users.
 func (s *RoomsService) ShareLinkWithRoom(ctx context.Context, roomIdOrName string, message string, link string) (*PaginatedResponse, error) {
-	var u, err = getRoomParam(roomIdOrName, shareLinkWithRoomRoute)
+	var u, err = getRoomResourcePath(roomIdOrName, shareLinkWithRoomRoute)
 	if err != nil {
 		return nil, err
 	}
@@ -337,7 +338,7 @@ func (s *RoomsService) ShareLinkWithRoom(ctx context.Context, roomIdOrName strin
 // Authentication required, with scope view_room.
 // Accessible by group clients, room clients, users.
 func (s *RoomsService) GetRoomParticipants(ctx context.Context, roomIdOrName string, opt *RoomParticipantsOptions) ([]*UserListItem, *PaginatedResponse, error) {
-	var u, err = getRoomParam(roomIdOrName, getRoomParticipantsRoute)
+	var u, err = getRoomResourcePath(roomIdOrName, getRoomParticipantsRoute)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -366,7 +367,7 @@ func (s *RoomsService) GetRoomParticipants(ctx context.Context, roomIdOrName str
 // Authentication required, with scope send_message.
 // Accessible by users.
 func (s *RoomsService) ReplyToRoomMessage(ctx context.Context, roomIdOrName string, messageId string, message string) (*PaginatedResponse, error) {
-	var u, err = getRoomParam(roomIdOrName, replyToRoomMessageRoute)
+	var u, err = getRoomResourcePath(roomIdOrName, replyToRoomMessageRoute)
 	if err != nil {
 		return nil, err
 	}
@@ -389,7 +390,7 @@ func (s *RoomsService) ReplyToRoomMessage(ctx context.Context, roomIdOrName stri
 // Authentication required, with scope send_message.
 // Accessible by users.
 func (s *RoomsService) SendRoomMessage(ctx context.Context, roomIdOrName string, message string) (*RoomMessage, *PaginatedResponse, error) {
-	var u, err = getRoomParam(roomIdOrName, sendRoomMessageRoute)
+	var u, err = getRoomResourcePath(roomIdOrName, sendRoomMessageRoute)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -408,13 +409,30 @@ func (s *RoomsService) SendRoomMessage(ctx context.Context, roomIdOrName string,
 	return m, resp, nil
 }
 
-func getRoomParam(roomIdOrName string, route string) (string, error)  {
-	if roomIdOrName != "" {
-		return fmt.Sprintf(route, roomIdOrName), nil
-	} else {
-		return "", emptyParam
+// Gets all members for this private room.
+//
+// Authentication required, with scope view_room.
+// Accessible by group clients, room clients, users.
+func (s *RoomsService) GetRoomMembers(ctx context.Context, roomIdOrName string, opt *ListOptions) ([]*UserListItem, *PaginatedResponse, error) {
+	var u, err = getRoomResourcePath(roomIdOrName, getRoomMembersRoute)
+	if err != nil {
+		return nil, nil, err
 	}
+
+	req, err := s.client.Get(u)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var members *usersListResponse
+	resp, err := s.client.Do(ctx, req, &members)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return members.Items, resp, nil
 }
+
 
 // Creates a new Room Object
 func NewRoom(name string) *Room {
@@ -426,6 +444,14 @@ func NewRoom(name string) *Room {
 	r.Privacy = RoomPrivacyPublic
 
 	return r
+}
+
+func getRoomResourcePath(roomIdOrName string, route string) (string, error)  {
+	if roomIdOrName != "" {
+		return fmt.Sprintf(route, roomIdOrName), nil
+	} else {
+		return "", emptyParam
+	}
 }
 
 type roomsListResponse struct {

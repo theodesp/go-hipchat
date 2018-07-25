@@ -229,6 +229,25 @@ func (suite *HipChatClientTestSuite) TestRoomsService_SendRoomMessage() {
 	assert.Equal("123", m.Id)
 }
 
+func (suite *HipChatClientTestSuite) TestRoomsService_GetRoomMembers() {
+	assert := assert.New(suite.T())
+	route := fmt.Sprintf(getRoomMembersRoute, "1")
+	route = fmt.Sprintf("/%s/%s", apiVersion2, route)
+
+	suite.mux.HandleFunc(route, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(r.Method, http.MethodGet)
+		fmt.Fprint(w, `{"items":[{"id":1,"name":"Theo"},{"id":2,"name":"Alex"}]}`)
+	})
+
+	members, _, err := suite.client.Rooms.GetRoomMembers(context.Background(), "1", nil)
+	assert.Nil(err)
+
+	want := []*UserListItem{
+		{Id: int64(1), Name: "Theo", Version: ""},
+		{Id: int64(2), Name: "Alex", Version: ""}}
+	assert.Equal(want, members)
+}
+
 func (suite *HipChatClientTestSuite) TestRoomsService_EmptyRoomParams() {
 	assert := assert.New(suite.T())
 	_, _, err := suite.client.Rooms.GetRoom(context.Background(), "")
