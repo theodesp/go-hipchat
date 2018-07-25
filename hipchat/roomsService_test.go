@@ -229,6 +229,22 @@ func (suite *HipChatClientTestSuite) TestRoomsService_SendRoomMessage() {
 	assert.Equal("123", m.Id)
 }
 
+func (suite *HipChatClientTestSuite) TestRoomsService_InviteUser() {
+	assert := assert.New(suite.T())
+	route := fmt.Sprintf(inviteUserRoute, "1")
+	route = fmt.Sprintf("/%s/%s/%s", apiVersion2, route, "theo")
+
+	suite.mux.HandleFunc(route, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(r.Method, http.MethodPost)
+
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	resp, err := suite.client.Rooms.InviteUser(context.Background(), "1", "theo", "")
+	assert.Nil(err)
+	assert.Equal(http.StatusNoContent, resp.StatusCode)
+}
+
 func (suite *HipChatClientTestSuite) TestRoomsService_GetRoomMembers() {
 	assert := assert.New(suite.T())
 	route := fmt.Sprintf(getRoomMembersRoute, "1")
@@ -250,8 +266,8 @@ func (suite *HipChatClientTestSuite) TestRoomsService_GetRoomMembers() {
 
 func (suite *HipChatClientTestSuite) TestRoomsService_AddRoomMember() {
 	assert := assert.New(suite.T())
-	route := fmt.Sprintf(roomMemberRoute, "1")
-	route = fmt.Sprintf("/%s/%s%s", apiVersion2, route, "theo")
+	route := fmt.Sprintf(getRoomMembersRoute, "1")
+	route = fmt.Sprintf("/%s/%s/%s", apiVersion2, route, "theo")
 
 	suite.mux.HandleFunc(route, func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(r.Method, http.MethodPut)
@@ -265,8 +281,8 @@ func (suite *HipChatClientTestSuite) TestRoomsService_AddRoomMember() {
 
 func (suite *HipChatClientTestSuite) TestRoomsService_RemoveRoomMember() {
 	assert := assert.New(suite.T())
-	route := fmt.Sprintf(roomMemberRoute, "1")
-	route = fmt.Sprintf("/%s/%s%s", apiVersion2, route, "theo")
+	route := fmt.Sprintf(getRoomMembersRoute, "1")
+	route = fmt.Sprintf("/%s/%s/%s", apiVersion2, route, "theo")
 
 	suite.mux.HandleFunc(route, func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(r.Method, http.MethodDelete)
@@ -311,5 +327,8 @@ func (suite *HipChatClientTestSuite) TestRoomsService_EmptyRoomParams() {
 	assert.EqualError(err, emptyParam.Error())
 
 	_, err = suite.client.Rooms.RemoveRoomMember(context.Background(),"", "")
+	assert.EqualError(err, emptyParam.Error())
+
+	_, err = suite.client.Rooms.InviteUser(context.Background(),"", "", "")
 	assert.EqualError(err, emptyParam.Error())
 }

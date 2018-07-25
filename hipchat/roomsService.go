@@ -23,7 +23,7 @@ const (
 	replyToRoomMessageRoute  = "room/%v/reply"
 	sendRoomMessageRoute     = "room/%v/message"
 	getRoomMembersRoute      = "room/%v/member"
-	roomMemberRoute          = "room/%v/member/"
+	inviteUserRoute          = "room/%v/invite"
 )
 
 // RoomsService handles communication with the room related
@@ -387,6 +387,38 @@ func (s *RoomsService) ReplyToRoomMessage(ctx context.Context, roomIdOrName stri
 	return resp, nil
 }
 
+// Invite a user to a public room.
+//
+// Authentication required, with scope admin_room.
+// Accessible by users.
+func (s *RoomsService) InviteUser(ctx context.Context, roomIdOrName string, userIdOrName string, reason string) (*PaginatedResponse, error) {
+	var u, err = getRoomResourcePath(roomIdOrName, inviteUserRoute)
+	if err != nil {
+		return nil, err
+	}
+
+	if userIdOrName == "" {
+		return nil, emptyParam
+	}
+
+	u = strings.Join([]string{u, userIdOrName}, "/")
+	var r reasonBody
+	if reason != "" {
+		r = reasonBody{reason}
+	} 
+	req, err := s.client.Post(u, r)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.client.Do(ctx, req, nil)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, nil
+}
+
 // Send a message to a room.
 //
 // Authentication required, with scope send_message.
@@ -441,7 +473,7 @@ func (s *RoomsService) GetRoomMembers(ctx context.Context, roomIdOrName string, 
 // Authentication required, with scope admin_room.
 // Accessible by group clients, room clients, users.
 func (s *RoomsService) AddRoomMember(ctx context.Context, roomIdOrName string, userIdOrName string) (*PaginatedResponse, error) {
-	var u, err = getRoomResourcePath(roomIdOrName, roomMemberRoute)
+	var u, err = getRoomResourcePath(roomIdOrName, getRoomMembersRoute)
 	if err != nil {
 		return nil, err
 	}
@@ -450,7 +482,7 @@ func (s *RoomsService) AddRoomMember(ctx context.Context, roomIdOrName string, u
 		return nil, emptyParam
 	}
 
-	u = strings.Join([]string{u, userIdOrName}, "")
+	u = strings.Join([]string{u, userIdOrName}, "/")
 	// TODO: Investigate room_roles body param
 	req, err := s.client.Put(u, nil)
 	if err != nil {
@@ -470,7 +502,7 @@ func (s *RoomsService) AddRoomMember(ctx context.Context, roomIdOrName string, u
 // Authentication required, with scope admin_room.
 // Accessible by group clients, room clients, users.
 func (s *RoomsService) RemoveRoomMember(ctx context.Context, roomIdOrName string, userIdOrName string) (*PaginatedResponse, error) {
-	var u, err = getRoomResourcePath(roomIdOrName, roomMemberRoute)
+	var u, err = getRoomResourcePath(roomIdOrName, getRoomMembersRoute)
 	if err != nil {
 		return nil, err
 	}
@@ -479,7 +511,7 @@ func (s *RoomsService) RemoveRoomMember(ctx context.Context, roomIdOrName string
 		return nil, emptyParam
 	}
 
-	u = strings.Join([]string{u, userIdOrName}, "")
+	u = strings.Join([]string{u, userIdOrName}, "/")
 	req, err := s.client.Delete(u)
 	if err != nil {
 		return nil, err
@@ -515,6 +547,10 @@ func getRoomResourcePath(roomIdOrName string, route string) (string, error)  {
 
 type roomsListResponse struct {
 	Items []*RoomListItem `json:"items,omitempty"`
+}
+
+type reasonBody struct {
+	Reason string `json:"reason"`
 }
 
 type topicBody struct {
