@@ -26,6 +26,7 @@ type Client struct {
 	apiVersion string
 
 	Rooms *RoomsService
+	Users *UsersService
 }
 
 type service struct {
@@ -56,6 +57,7 @@ func NewClient(httpClient *http.Client) *Client {
 
 	// Services
 	c.Rooms = (*RoomsService)(&c.common)
+	c.Users = (*UsersService)(&c.common)
 
 	return c
 }
