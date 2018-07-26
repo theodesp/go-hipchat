@@ -27,6 +27,7 @@ install:
   - go get -u golang.org/x/oauth2
   - go get -u github.com/stretchr/testify
   - go get -u github.com/google/go-querystring/query
+  - go get -u github.com/philippfranke/multipart-related/related
 
 # to run your custom scripts instead of automatic MSBuild
 build_script:

@@ -85,6 +85,29 @@ func (suite *HipChatClientTestSuite) TestClient_TestNewRequest() {
 	assert.Equal(req.Header.Get("User-Agent"), suite.client.UserAgent)
 }
 
+func (suite *HipChatClientTestSuite) TestClient_TestNewUploadRequest() {
+	assert := assert.New(suite.T())
+
+	inURL, _ := "bar", suite.server.URL+"/v2/bar"
+	_, err := suite.client.NewUploadRequest(inURL, nil, 0, "", nil, "")
+	assert.NotNil(err)
+
+	f := bytes.NewReader([]byte("Hello World"))
+
+	req, err := suite.client.NewUploadRequest(inURL, f, 0, "text/html", sendMessageBody{"message"}, "upload.png")
+	assert.Nil(err)
+
+	// test that body contains reader payload
+	body, _ := ioutil.ReadAll(req.Body)
+	assert.Contains(string(body), "Hello World")
+	assert.Contains(string(body), "text/html")
+	assert.Contains(string(body), "message")
+
+	// test that default user-agent is attached to the request
+	assert.Equal(req.Header.Get("User-Agent"), suite.client.UserAgent)
+	assert.Equal(http.MethodPost, req.Method)
+}
+
 func (suite *HipChatClientTestSuite) TestNewRequest_invalidJSON() {
 	assert := assert.New(suite.T())
 	type T struct {

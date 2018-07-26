@@ -5,10 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/philippfranke/multipart-related/related"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/textproto"
 	"net/url"
 	"strings"
 )
@@ -93,6 +96,82 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 	if c.UserAgent != "" {
 		req.Header.Set("User-Agent", c.UserAgent)
 	}
+
+	return req, nil
+}
+
+// NewUploadRequest creates an upload request.
+func (c *Client) NewUploadRequest(
+	urlStr string,
+	reader io.Reader,
+	size int64,
+	mediaType string,
+	body interface{},
+	fileName string) (*http.Request, error) {
+	ref, err := c.BaseUrl.Parse(c.apiVersion + "/" + urlStr)
+	if err != nil {
+		return nil, err
+	}
+
+	if reader == nil {
+		return nil, errors.New("upload_request: missing file reader parameter")
+	}
+
+	var buf *bytes.Buffer
+	if body != nil {
+		buf = new(bytes.Buffer)
+		enc := json.NewEncoder(buf)
+		enc.SetEscapeHTML(false)
+		err := enc.Encode(body)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var wBuf = new(bytes.Buffer)
+	w := related.NewWriter(wBuf)
+	_, err =
+		w.CreateRoot("", "", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if body != nil {
+		var header = make(textproto.MIMEHeader)
+		header.Set("Content-Type", contentTypeApplicationJson)
+		header.Set("Content-Disposition", contentDispositionMetadata)
+		nextPart, err := w.CreatePart("", header)
+		if err != nil {
+			return nil, err
+		}
+		nextPart.Write(buf.Bytes())
+	}
+
+	var header = make(textproto.MIMEHeader)
+	header.Set("Content-Type", mediaType)
+	header.Set("Content-Disposition", fmt.Sprintf(contentDispositionFile, fileName))
+	nextPart, err := w.CreatePart("", header)
+	if err != nil {
+		return nil, err
+	}
+
+	upload, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return nil, err
+	}
+
+	nextPart.Write(upload)
+	if err := w.Close(); err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", ref.String(), bytes.NewReader(wBuf.Bytes()))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", w.FormDataContentType())
+	req.Header.Set("User-Agent", c.UserAgent)
 
 	return req, nil
 }

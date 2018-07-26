@@ -2,10 +2,11 @@ package hipchat
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"net/http"
-	"encoding/json"
+	"io/ioutil"
 )
 
 func (suite *HipChatClientTestSuite) TestRoomsService_ListRooms() {
@@ -164,6 +165,35 @@ func (suite *HipChatClientTestSuite) TestRoomsService_ShareLinkWithRoom() {
 	assert.Equal(http.StatusNoContent, resp.StatusCode)
 }
 
+func (suite *HipChatClientTestSuite) TestRoomsService_ShareFile() {
+	assert := assert.New(suite.T())
+	route := fmt.Sprintf(shareFileRoute, "1")
+	route = fmt.Sprintf("/%s/%s", apiVersion2, route)
+
+	message := "hello world"
+
+	suite.mux.HandleFunc(route, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(r.Method, http.MethodPost)
+
+		body, _ := ioutil.ReadAll(r.Body)
+		assert.Contains(string(body), message)
+
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	f, err := ioutil.TempFile("","")
+	if err != nil {
+		assert.FailNow("failed to create temp file")
+	}
+	defer f.Close()
+
+	resp, err := suite.client.Rooms.ShareFile(context.Background(), "1", f, message)
+	assert.Nil(err)
+	assert.Equal(http.StatusNoContent, resp.StatusCode)
+}
+
+
+
 func (suite *HipChatClientTestSuite) TestRoomsService_GetRoomParticipants() {
 	assert := assert.New(suite.T())
 	route := fmt.Sprintf(getRoomParticipantsRoute, "1")
@@ -314,21 +344,24 @@ func (suite *HipChatClientTestSuite) TestRoomsService_EmptyRoomParams() {
 	_, _, err = suite.client.Rooms.GetRoomParticipants(context.Background(), "", nil)
 	assert.EqualError(err, emptyParam.Error())
 
-	_, err = suite.client.Rooms.ReplyToRoomMessage(context.Background(),"", "", "")
+	_, err = suite.client.Rooms.ReplyToRoomMessage(context.Background(), "", "", "")
 	assert.EqualError(err, emptyParam.Error())
 
-	_, _, err = suite.client.Rooms.SendRoomMessage(context.Background(),"", "")
+	_, _, err = suite.client.Rooms.SendRoomMessage(context.Background(), "", "")
 	assert.EqualError(err, emptyParam.Error())
 
-	_, _, err = suite.client.Rooms.GetRoomMembers(context.Background(),"", nil)
+	_, _, err = suite.client.Rooms.GetRoomMembers(context.Background(), "", nil)
 	assert.EqualError(err, emptyParam.Error())
 
-	_, err = suite.client.Rooms.AddRoomMember(context.Background(),"", "")
+	_, err = suite.client.Rooms.AddRoomMember(context.Background(), "", "")
 	assert.EqualError(err, emptyParam.Error())
 
-	_, err = suite.client.Rooms.RemoveRoomMember(context.Background(),"", "")
+	_, err = suite.client.Rooms.RemoveRoomMember(context.Background(), "", "")
 	assert.EqualError(err, emptyParam.Error())
 
-	_, err = suite.client.Rooms.InviteUser(context.Background(),"", "", "")
+	_, err = suite.client.Rooms.InviteUser(context.Background(), "", "", "")
+	assert.EqualError(err, emptyParam.Error())
+
+	_, err = suite.client.Rooms.ShareFile(context.Background(), "", nil, "")
 	assert.EqualError(err, emptyParam.Error())
 }

@@ -3,6 +3,7 @@ package hipchat
 import (
 	"github.com/google/go-querystring/query"
 	"net/url"
+	"path/filepath"
 	"reflect"
 )
 
@@ -26,4 +27,8 @@ func addUrlOptions(s string, opt interface{}) (string, error) {
 
 	u.RawQuery = qs.Encode()
 	return u.String(), nil
+}
+
+func baseFileName(path string) string {
+	return filepath.Base(path)
 }

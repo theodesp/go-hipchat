@@ -3,6 +3,9 @@ package hipchat
 import (
 	"context"
 	"fmt"
+	"mime"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -12,7 +15,6 @@ const (
 
 	// Private Room access
 	RoomPrivacyPrivate = "private"
-
 
 	listRoomsRoute           = "room"
 	getRoomRoute             = "room/%v"
@@ -24,6 +26,7 @@ const (
 	sendRoomMessageRoute     = "room/%v/message"
 	getRoomMembersRoute      = "room/%v/member"
 	inviteUserRoute          = "room/%v/invite"
+	shareFileRoute           = "room/%v/share/file"
 )
 
 // RoomsService handles communication with the room related
@@ -34,19 +37,19 @@ type RoomsService service
 // RoomListItem represents a HipChat Room list item
 type RoomListItem struct {
 	// Id of the room.
-	Id         int64  `json:"id"`
+	Id int64 `json:"id"`
 
 	// Whether or not this room is archived.
-	IsArchived bool   `json:"is_archived"`
+	IsArchived bool `json:"is_archived"`
 
 	// Name of the room.
-	Name       string `json:"name"`
+	Name string `json:"name"`
 
 	// Privacy setting. Valid values: public, private.
-	Privacy    string `json:"privacy"`
+	Privacy string `json:"privacy"`
 
 	// An etag-like random version string.
-	Version    string `json:"version"`
+	Version string `json:"version"`
 
 	// URLs to retrieve room information
 	Links *RoomLinks `json:"links,omitempty"`
@@ -100,8 +103,8 @@ type Room struct {
 	Owner *UserListItem `json:"owner,omitempty"`
 
 	// Statistics for this room.
-	Statistics *struct{
-		Links *struct{
+	Statistics *struct {
+		Links *struct {
 			// The URL to use to retrieve room statistics
 			Self string `json:"self"`
 		} `json:"links,omitempty"`
@@ -171,7 +174,6 @@ func (s *RoomsService) ListRooms(ctx context.Context, opt *RoomsListOptions) ([]
 
 	return rooms.Items, resp, nil
 }
-
 
 // Get room details.
 //
@@ -405,7 +407,7 @@ func (s *RoomsService) InviteUser(ctx context.Context, roomIdOrName string, user
 	var r reasonBody
 	if reason != "" {
 		r = reasonBody{reason}
-	} 
+	}
 	req, err := s.client.Post(u, r)
 	if err != nil {
 		return nil, err
@@ -525,9 +527,46 @@ func (s *RoomsService) RemoveRoomMember(ctx context.Context, roomIdOrName string
 	return resp, nil
 }
 
+// Share a file with the room.
+//
+// Format the request as multipart/related with a single part of content-type
+// application/json and a second part containing your file.
+func (s *RoomsService) ShareFile(ctx context.Context, roomIdOrName string, file *os.File, message string) (*PaginatedResponse, error) {
+	var u, err = getRoomResourcePath(roomIdOrName, shareFileRoute)
+	if err != nil {
+		return nil, err
+	}
+
+	var m sendMessageBody
+	if message != "" {
+		m = sendMessageBody{message}
+	}
+
+	stat, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+	if stat.IsDir() {
+		return nil, invalidFileUpload
+	}
+
+	mediaType := mime.TypeByExtension(filepath.Ext(file.Name()))
+	req, err := s.client.NewUploadRequest(u, file, stat.Size(), mediaType, m, baseFileName(file.Name()))
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.client.Do(ctx, req, nil)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, nil
+}
+
 // Creates a new Room Object
 func NewRoom(name string) *Room {
-	r:= &Room{}
+	r := &Room{}
 	r.RoomListItem = RoomListItem{}
 	r.Name = name
 
@@ -537,7 +576,7 @@ func NewRoom(name string) *Room {
 	return r
 }
 
-func getRoomResourcePath(roomIdOrName string, route string) (string, error)  {
+func getRoomResourcePath(roomIdOrName string, route string) (string, error) {
 	if roomIdOrName != "" {
 		return fmt.Sprintf(route, roomIdOrName), nil
 	} else {
@@ -563,10 +602,10 @@ type sendMessageBody struct {
 
 type shareLinkBody struct {
 	Message string `json:"message"`
-	Link string `json:"link"`
+	Link    string `json:"link"`
 }
 
 type replyToMessageBody struct {
 	MessageId string `json:"parentMessageId"`
-	Message string `json:"message"`
+	Message   string `json:"message"`
 }

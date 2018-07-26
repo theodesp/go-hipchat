@@ -6,6 +6,7 @@ format:
 debs:
 	@go get -u github.com/stretchr/testify
 	@go get -u github.com/google/go-querystring/query
+	@go get -u github.com/philippfranke/multipart-related/related
 
 .PHONY: test
 test:
